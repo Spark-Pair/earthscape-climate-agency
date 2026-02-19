@@ -109,6 +109,9 @@ def render_global_styles() -> None:
                 background: #1e1e21 !important;
                 color: #ffffff !important;
             }
+            .stFileUploader section {
+                border-radius: 16px !important;
+            }
             div[data-testid="stVerticalBlock"]:has(div[data-testid="stForm"]){
                 border-radius: 16px !important;
             }
@@ -239,6 +242,32 @@ def render_global_styles() -> None:
             }
             .login-title { margin: 0; color: var(--text) !important; }
             .login-sub { margin: 0; color: var(--muted) !important; }
+            .team-member-card { margin-bottom: 10px; }
+            .chips-wrap {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .link-chip {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 6px 10px;
+                border-radius: 999px;
+                border: 1px solid var(--border);
+                background: var(--card-soft);
+                color: var(--text) !important;
+                text-decoration: none !important;
+                font-size: 12px;
+            }
+            .link-chip:hover {
+                background: #303034;
+                border-color: #58585f;
+            }
+            .chip-arrow {
+                font-weight: 700;
+                opacity: .9;
+            }
         </style>
         """,
         unsafe_allow_html=True,

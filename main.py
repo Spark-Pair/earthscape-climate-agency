@@ -9,6 +9,7 @@ from modules import feedback
 from modules import performance
 from modules import prediction
 from modules import reports
+from modules import team_page
 from modules.utils import card, init_session_state, render_banner, render_global_styles, show_toast
 
 
@@ -73,6 +74,9 @@ def render_sidebar_navigation(user: dict) -> str:
 
     if st.sidebar.button("Datasets", key="nav_datasets", use_container_width=True):
         st.session_state.current_page = "Datasets"
+
+    if st.sidebar.button("Team", key="nav_team", use_container_width=True):
+        st.session_state.current_page = "Team"
 
     if st.sidebar.button("Logout", key="nav_logout", use_container_width=True):
         st.session_state.current_page = "Logout"
@@ -473,6 +477,8 @@ def app() -> None:
 
     if page == "Users":
         render_users_page(user)
+    elif page == "Team":
+        team_page.render_team_page()
     elif page == "Logout":
         render_logout_page()
     else:
