@@ -23,7 +23,7 @@ def render_global_styles() -> None:
 
             .stAppHeader {
                 border-bottom: 1px solid var(--border);
-                background: transparent !important;
+                background: var(--bg) !important;
             }
 
             .stApp {
