@@ -19,7 +19,7 @@ On Windows, use `python` instead of `python3` in commands below.
 ## 2. Clone the Repository
 
 ```bash
-git clone <YOUR_GITHUB_REPO_URL>
+git clone https://github.com/Spark-Pair/earthscape-climate-agency.git
 cd sem6-eProject
 ```
 
