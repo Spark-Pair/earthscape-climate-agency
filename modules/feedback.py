@@ -81,5 +81,5 @@ def render_feedback_page(user: dict) -> None:
                     for r in rows
                 ]
             ),
-            use_container_width=True,
+            width="stretch",
         )

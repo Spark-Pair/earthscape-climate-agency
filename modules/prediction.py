@@ -169,7 +169,7 @@ def render_prediction_page(df: pd.DataFrame, user_id: int) -> None:
                 step=0.1,
             )
 
-        submit = st.form_submit_button("Predict Temperature", use_container_width=True)
+        submit = st.form_submit_button("Predict Temperature", width="stretch")
 
     if submit:
         start = perf_counter()

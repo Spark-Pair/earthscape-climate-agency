@@ -48,11 +48,11 @@ def render_performance_page(user: dict) -> None:
         st.metric("Overall Avg Time (ms)", f"{df['execution_time_ms'].mean():.3f}")
 
     st.markdown("### Average Execution Time Per Action")
-    st.dataframe(avg_df, use_container_width=True)
+    st.dataframe(avg_df, width="stretch")
 
     st.markdown("### Charts")
     chart_df = avg_df.set_index("action_name")[["avg_execution_time_ms"]]
-    st.bar_chart(chart_df, use_container_width=True)
+    st.bar_chart(chart_df, width="stretch")
 
     trend_df = df.copy()
     trend_df["timestamp"] = pd.to_datetime(trend_df["timestamp"], errors="coerce")
@@ -60,8 +60,8 @@ def render_performance_page(user: dict) -> None:
     if not trend_df.empty:
         st.line_chart(
             trend_df.set_index("timestamp")[["execution_time_ms"]],
-            use_container_width=True,
+            width="stretch",
         )
 
     st.markdown("### Performance Logs")
-    st.dataframe(df, use_container_width=True)
+    st.dataframe(df, width="stretch")

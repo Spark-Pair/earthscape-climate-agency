@@ -49,12 +49,12 @@ def render_reports_page(df: pd.DataFrame, dataset_name: str, user_id: int) -> No
     st.markdown("### Summary Report")
     st.code(summary_text)
     st.markdown("### Year-Month Aggregated Report")
-    st.dataframe(aggregate_report, use_container_width=True)
+    st.dataframe(aggregate_report, width="stretch")
 
     c1, c2 = st.columns(2)
 
     with c1:
-        if st.button("Prepare CSV Export", use_container_width=True):
+        if st.button("Prepare CSV Export", width="stretch"):
             start = perf_counter()
             csv_bytes = aggregate_report.to_csv(index=False).encode("utf-8")
             elapsed_ms = (perf_counter() - start) * 1000
@@ -67,7 +67,7 @@ def render_reports_page(df: pd.DataFrame, dataset_name: str, user_id: int) -> No
             )
 
     with c2:
-        if st.button("Prepare Summary Export", use_container_width=True):
+        if st.button("Prepare Summary Export", width="stretch"):
             start = perf_counter()
             summary_bytes = summary_text.encode("utf-8")
             elapsed_ms = (perf_counter() - start) * 1000

@@ -98,7 +98,7 @@ def render_admin_upload_and_save(user: dict) -> None:
 
     st.success("Dataset uploaded and cleaned successfully.")
     show_toast("Dataset uploaded and cleaned successfully.", "success")
-    st.dataframe(cleaned_df.head(50), use_container_width=True)
+    st.dataframe(cleaned_df.head(50), width="stretch")
 
     st.session_state.active_df = cleaned_df
     st.session_state.active_dataset_id = None
@@ -121,7 +121,7 @@ def render_admin_upload_and_save(user: dict) -> None:
         key="assign_multiselect",
     )
 
-    if st.button("Save Dataset", use_container_width=True):
+    if st.button("Save Dataset", width="stretch"):
         if not dataset_name.strip():
             st.error("Dataset name is required.")
         elif not st.session_state.last_upload_csv_text:
@@ -188,7 +188,7 @@ def render_dataset_access_overview(admin_user: dict) -> None:
                             for row in access_rows
                         ]
                     ),
-                    use_container_width=True,
+                    width="stretch",
                 )
 
             st.markdown("#### Assign Later")
@@ -273,19 +273,19 @@ def render_assigned_dataset_selector(user: dict) -> None:
                 open_clicked = st.button(
                     "Open Dataset",
                     key=f"open_dataset_{row['id']}",
-                    use_container_width=True,
+                    width="stretch",
                 )
             with c2:
                 delete_clicked = st.button(
                     "Delete Dataset",
                     key=f"delete_dataset_{row['id']}",
-                    use_container_width=True,
+                    width="stretch",
                 )
         else:
             open_clicked = st.button(
                 "Open Dataset",
                 key=f"open_dataset_{row['id']}",
-                use_container_width=True,
+                width="stretch",
             )
             delete_clicked = False
 

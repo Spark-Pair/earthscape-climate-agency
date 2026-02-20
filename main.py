@@ -69,16 +69,16 @@ def render_sidebar_navigation(user: dict) -> str:
     st.sidebar.markdown("<div style='font-size:12px;opacity:.85;margin:8px 0;'>MENU</div>", unsafe_allow_html=True)
 
     if user["role"] == "admin":
-        if st.sidebar.button("Users", key="nav_users", use_container_width=True):
+        if st.sidebar.button("Users", key="nav_users", width="stretch"):
             st.session_state.current_page = "Users"
 
-    if st.sidebar.button("Datasets", key="nav_datasets", use_container_width=True):
+    if st.sidebar.button("Datasets", key="nav_datasets", width="stretch"):
         st.session_state.current_page = "Datasets"
 
-    if st.sidebar.button("Team", key="nav_team", use_container_width=True):
+    if st.sidebar.button("Team", key="nav_team", width="stretch"):
         st.session_state.current_page = "Team"
 
-    if st.sidebar.button("Logout", key="nav_logout", use_container_width=True):
+    if st.sidebar.button("Logout", key="nav_logout", width="stretch"):
         st.session_state.current_page = "Logout"
 
     st.sidebar.markdown(
@@ -261,7 +261,7 @@ def render_users_page(user: dict) -> None:
             auth.render_create_analyst_form()
         c1, c2, c3 = st.columns([1, 1, 2], vertical_alignment="center")
         with c1:
-            if st.button("← Back", use_container_width=True):
+            if st.button("← Back", width="stretch"):
                 st.session_state.show_add_user = False
                 st.rerun()
         return
@@ -270,7 +270,7 @@ def render_users_page(user: dict) -> None:
     with top_left:
         search = st.text_input("Search users", placeholder="Search by username, fullname, or role")
     with top_mid:
-        if st.button("Add User", use_container_width=True):
+        if st.button("Add User", width="stretch"):
             st.session_state.show_add_user = True
             st.rerun()
     with top_right:
@@ -320,7 +320,7 @@ def render_users_page(user: dict) -> None:
     selected_user = user_options[selected]
 
     if int(selected_user["is_active"]) == 1:
-        if st.button("Deactivate", use_container_width=True):
+        if st.button("Deactivate", width="stretch"):
             if selected_user["id"] == user["id"]:
                 st.error("You cannot deactivate your own account.")
                 return
@@ -329,7 +329,7 @@ def render_users_page(user: dict) -> None:
             show_toast(f"{selected_user['username']} deactivated.", "success")
             st.rerun()
     else:
-        if st.button("Activate", use_container_width=True):
+        if st.button("Activate", width="stretch"):
             database.set_user_active(selected_user["id"], 1)
             st.success(f"{selected_user['username']} is active.")
             show_toast(f"{selected_user['username']} activated.", "success")
@@ -446,13 +446,13 @@ def render_logout_page() -> None:
 
     space1, c1, c2, space2, = st.columns([1, 1, 1, 1], vertical_alignment="center")
     with c1:
-        if st.button("Logout Now", use_container_width=True):
+        if st.button("Logout Now", width="stretch"):
             auth.logout()
             st.success("Logged out.")
             show_toast("Logged out successfully.", "success")
             st.rerun()
     with c2:
-        if st.button("Cancel", use_container_width=True):
+        if st.button("Cancel", width="stretch"):
             st.session_state.current_page = "Datasets"
             st.rerun()
 

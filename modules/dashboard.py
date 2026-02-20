@@ -80,7 +80,7 @@ def render_dashboard(df: pd.DataFrame, dataset_name: str, user_id: int) -> None:
     )
 
     with tab_preview:
-        st.dataframe(filtered, use_container_width=True, height=420)
+        st.dataframe(filtered, width="stretch", height=420)
         st.caption(f"Rows: {len(filtered)}")
 
     with tab_kpi:
@@ -101,7 +101,7 @@ def render_dashboard(df: pd.DataFrame, dataset_name: str, user_id: int) -> None:
             .mean()
             .sort_values(["Year", "Month"])
         )
-        st.dataframe(monthly, use_container_width=True)
+        st.dataframe(monthly, width="stretch")
 
     with tab_graphs:
         trend = (
@@ -171,7 +171,7 @@ def render_dashboard(df: pd.DataFrame, dataset_name: str, user_id: int) -> None:
                         "WindSpeed_z",
                     ]
                 ],
-                use_container_width=True,
+                width="stretch",
             )
 
             temp_alerts = anomalies[anomalies["Temperature_z"].abs() > temp_thresh]
@@ -228,7 +228,7 @@ def render_dashboard(df: pd.DataFrame, dataset_name: str, user_id: int) -> None:
                     heatwave_records[
                         ["Year", "Month", "Temperature", "Rainfall", "CO2", "Humidity", "WindSpeed"]
                     ],
-                    use_container_width=True,
+                    width="stretch",
                 )
         with c4:
             st.markdown("#### Flood Affected Records")
@@ -239,7 +239,7 @@ def render_dashboard(df: pd.DataFrame, dataset_name: str, user_id: int) -> None:
                     flood_records[
                         ["Year", "Month", "Temperature", "Rainfall", "CO2", "Humidity", "WindSpeed"]
                     ],
-                    use_container_width=True,
+                    width="stretch",
                 )
 
     elapsed_ms = (perf_counter() - start) * 1000
