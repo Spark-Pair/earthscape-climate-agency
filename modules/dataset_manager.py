@@ -53,6 +53,18 @@ def render_admin_upload_and_save(user: dict) -> None:
         "📤",
         "<p class='section-muted'>Upload a CSV, validate fields, clean values, then save or assign.</p>",
     )
+    st.markdown(
+        """
+        <div class="app-card" style="padding:10px 14px;">
+            <p class="section-muted" style="margin:0;">
+                <b>Mandatory columns:</b>
+                <code>Year</code>, <code>Month</code>, <code>Temperature</code>, <code>Rainfall</code>,
+                <code>CO2</code>, <code>Humidity</code>, <code>WindSpeed</code>
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     uploader_key = f"upload_csv_{st.session_state.upload_uploader_key}"
     uploaded_file = st.file_uploader("Upload CSV dataset", type=["csv"], key=uploader_key)
