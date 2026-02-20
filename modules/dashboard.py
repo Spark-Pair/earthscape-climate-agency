@@ -15,7 +15,12 @@ def _build_working_frame(df: pd.DataFrame) -> pd.DataFrame:
     work["Temperature"] = pd.to_numeric(work["Temperature"], errors="coerce")
     work["Rainfall"] = pd.to_numeric(work["Rainfall"], errors="coerce")
     work["CO2"] = pd.to_numeric(work["CO2"], errors="coerce")
-    work = work.dropna(subset=["Year", "Month", "Temperature", "Rainfall", "CO2"])
+    work["Humidity"] = pd.to_numeric(work["Humidity"], errors="coerce")
+    work["WindSpeed"] = pd.to_numeric(work["WindSpeed"], errors="coerce")
+    work = work.dropna(
+        subset=["Year", "Month", "Temperature", "Rainfall", "CO2", "Humidity", "WindSpeed"]
+    )
+    work = work[(work["Month"] >= 1) & (work["Month"] <= 12)]
     work["Year"] = work["Year"].astype(int)
     work["Month"] = work["Month"].astype(int)
     work["date_key"] = work["Year"].astype(str) + "-" + work["Month"].astype(str).str.zfill(2)
@@ -32,7 +37,7 @@ def detect_anomalies(
     if work.empty:
         return work
 
-    for col in ["Temperature", "Rainfall", "CO2"]:
+    for col in ["Temperature", "Rainfall", "CO2", "Humidity", "WindSpeed"]:
         std = work[col].std(ddof=0)
         if std == 0:
             work[f"{col}_z"] = 0.0
@@ -42,6 +47,7 @@ def detect_anomalies(
     mask = (
         work["Temperature_z"].abs() > temp_thresh
     ) | (work["Rainfall_z"].abs() > rain_thresh) | (work["CO2_z"].abs() > co2_thresh)
+    mask = mask | (work["Humidity_z"].abs() > 2.0) | (work["WindSpeed_z"].abs() > 2.0)
     return work[mask].copy()
 
 
@@ -69,8 +75,8 @@ def render_dashboard(df: pd.DataFrame, dataset_name: str, user_id: int) -> None:
         st.warning("No data available in selected year range.")
         return
 
-    tab_preview, tab_kpi, tab_yearly, tab_graphs, tab_anomaly = st.tabs(
-        ["Preview", "KPIs", "Yearly Aggregation", "Graphs", "Anomalies & Alerts"]
+    tab_preview, tab_kpi, tab_aggregate, tab_graphs, tab_anomaly = st.tabs(
+        ["Preview", "KPIs", "Year-Month Aggregation", "Graphs", "Anomalies & Alerts"]
     )
 
     with tab_preview:
@@ -78,36 +84,45 @@ def render_dashboard(df: pd.DataFrame, dataset_name: str, user_id: int) -> None:
         st.caption(f"Rows: {len(filtered)}")
 
     with tab_kpi:
-        c1, c2, c3, c4 = st.columns(4)
+        c1, c2, c3 = st.columns(3)
         c1.metric("Avg Temperature", f"{filtered['Temperature'].mean():.2f}")
         c2.metric("Max Temperature", f"{filtered['Temperature'].max():.2f}")
         c3.metric("Avg Rainfall", f"{filtered['Rainfall'].mean():.2f}")
+        c4, c5, c6 = st.columns(3)
         c4.metric("Avg CO2", f"{filtered['CO2'].mean():.2f}")
+        c5.metric("Avg Humidity", f"{filtered['Humidity'].mean():.2f}")
+        c6.metric("Avg WindSpeed", f"{filtered['WindSpeed'].mean():.2f}")
 
-    with tab_yearly:
-        yearly = (
-            filtered.groupby("Year", as_index=False)[["Temperature", "Rainfall", "CO2"]]
+    with tab_aggregate:
+        monthly = (
+            filtered.groupby(["Year", "Month"], as_index=False)[
+                ["Temperature", "Rainfall", "CO2", "Humidity", "WindSpeed"]
+            ]
             .mean()
-            .sort_values("Year")
+            .sort_values(["Year", "Month"])
         )
-        st.dataframe(yearly, use_container_width=True)
+        st.dataframe(monthly, use_container_width=True)
 
     with tab_graphs:
         trend = (
             filtered.groupby(["Year", "Month"], as_index=False)
-            [["Temperature", "Rainfall", "CO2"]]
+            [["Temperature", "Rainfall", "CO2", "Humidity", "WindSpeed"]]
             .mean()
             .sort_values(["Year", "Month"])
         )
         trend["date_key"] = trend["Year"].astype(str) + "-" + trend["Month"].astype(str).str.zfill(2)
 
-        fig, axes = plt.subplots(3, 1, figsize=(10, 10), sharex=True)
+        fig, axes = plt.subplots(5, 1, figsize=(10, 14), sharex=True)
         sns.lineplot(data=trend, x="date_key", y="Temperature", ax=axes[0], color="#e76f51")
         axes[0].set_title("Temperature Trend")
         sns.lineplot(data=trend, x="date_key", y="Rainfall", ax=axes[1], color="#2a9d8f")
         axes[1].set_title("Rainfall Trend")
         sns.lineplot(data=trend, x="date_key", y="CO2", ax=axes[2], color="#264653")
         axes[2].set_title("CO2 Trend")
+        sns.lineplot(data=trend, x="date_key", y="Humidity", ax=axes[3], color="#3f72af")
+        axes[3].set_title("Humidity Trend")
+        sns.lineplot(data=trend, x="date_key", y="WindSpeed", ax=axes[4], color="#f4a261")
+        axes[4].set_title("WindSpeed Trend")
 
         for ax in axes:
             ax.tick_params(axis="x", rotation=45)
@@ -147,9 +162,13 @@ def render_dashboard(df: pd.DataFrame, dataset_name: str, user_id: int) -> None:
                         "Temperature",
                         "Rainfall",
                         "CO2",
+                        "Humidity",
+                        "WindSpeed",
                         "Temperature_z",
                         "Rainfall_z",
                         "CO2_z",
+                        "Humidity_z",
+                        "WindSpeed_z",
                     ]
                 ],
                 use_container_width=True,
@@ -158,8 +177,10 @@ def render_dashboard(df: pd.DataFrame, dataset_name: str, user_id: int) -> None:
             temp_alerts = anomalies[anomalies["Temperature_z"].abs() > temp_thresh]
             rain_alerts = anomalies[anomalies["Rainfall_z"].abs() > rain_thresh]
             co2_alerts = anomalies[anomalies["CO2_z"].abs() > co2_thresh]
+            humidity_alerts = anomalies[anomalies["Humidity_z"].abs() > 2.0]
+            wind_alerts = anomalies[anomalies["WindSpeed_z"].abs() > 2.0]
             st.info(
-                f"Alerts: Temperature={len(temp_alerts)}, Rainfall={len(rain_alerts)}, CO2={len(co2_alerts)}"
+                f"Alerts: Temperature={len(temp_alerts)}, Rainfall={len(rain_alerts)}, CO2={len(co2_alerts)}, Humidity={len(humidity_alerts)}, WindSpeed={len(wind_alerts)}"
             )
 
         st.divider()
@@ -204,7 +225,9 @@ def render_dashboard(df: pd.DataFrame, dataset_name: str, user_id: int) -> None:
                 st.info("No heatwave-affected records.")
             else:
                 st.dataframe(
-                    heatwave_records[["Year", "Month", "Temperature", "Rainfall", "CO2"]],
+                    heatwave_records[
+                        ["Year", "Month", "Temperature", "Rainfall", "CO2", "Humidity", "WindSpeed"]
+                    ],
                     use_container_width=True,
                 )
         with c4:
@@ -213,7 +236,9 @@ def render_dashboard(df: pd.DataFrame, dataset_name: str, user_id: int) -> None:
                 st.info("No flood-affected records.")
             else:
                 st.dataframe(
-                    flood_records[["Year", "Month", "Temperature", "Rainfall", "CO2"]],
+                    flood_records[
+                        ["Year", "Month", "Temperature", "Rainfall", "CO2", "Humidity", "WindSpeed"]
+                    ],
                     use_container_width=True,
                 )
 

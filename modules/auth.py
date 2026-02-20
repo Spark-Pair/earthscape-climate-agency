@@ -78,6 +78,10 @@ def logout() -> None:
         "active_dataset_source",
         "last_upload_csv_text",
         "last_upload_dataset_name",
+        "model",
+        "model_metrics",
+        "model_feature_defaults",
+        "model_dataset_signature",
     ]:
         st.session_state[key] = None
     st.session_state.username = None

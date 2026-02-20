@@ -2,16 +2,16 @@
 
 ## What this app is for
 
-EarthScape Climate Agency helps teams work with climate datasets.
+EarthScape Climate Agency helps teams upload, manage, and analyze climate datasets.
 
 It allows users to:
 - upload and clean climate data
-- analyze trends (temperature, rainfall, CO2)
-- detect anomalies and risk alerts
-- predict future temperature with ML
+- analyze trends and KPIs
+- detect anomalies and disaster-risk alerts
+- predict temperature using ML under custom conditions
 - export reports
 - submit support feedback
-- track performance timings
+- monitor app performance timings
 
 ## Who can use it
 
@@ -33,21 +33,22 @@ Location: `Datasets` page -> `Upload & Assign`, `Saved Datasets`, `Access Matrix
 - Upload CSV datasets
 - Auto-clean and validate data
 - Save datasets to database
-- Assign dataset access to analysts
+- Assign dataset access to one or more analysts
+- Assign later or take back access
+- Delete saved datasets
 - View dataset access mapping
 
 ### 3) Analytics and Reports
 Location: `Datasets` page -> `Analytics Workspace`
-- Dashboard with KPIs, trends, yearly table
-- Anomaly detection and disaster risk alerts
-- ML prediction for future year temperature
-- Export yearly CSV and summary text report
+- Dashboard with preview, KPIs, trends, anomaly and risk alerts
+- ML prediction using multivariate linear regression
+- Export CSV report and summary report
 
 ### 4) Feedback and Monitoring
 Location: `Datasets` page -> `Analytics Workspace` tabs
 - View all feedback
-- Update feedback status
-- View performance logs/charts/averages
+- Update feedback status / delete feedback
+- View performance logs and averages
 
 ## What Analyst can do
 
@@ -66,12 +67,13 @@ Location: `Datasets` page -> `Analytics Workspace`
 
 ## Main pages and where to find features
 
-## Sidebar Pages
+### Sidebar Pages
 - `Users` (Admin only)
 - `Datasets` (Admin + Analyst)
+- `Team`
 - `Logout`
 
-## Datasets Page Tabs
+### Datasets Page Tabs
 For Admin:
 - `Upload & Assign`
 - `Saved Datasets`
@@ -82,7 +84,7 @@ For Analyst:
 - `Saved Datasets`
 - `Analytics Workspace`
 
-## Analytics Workspace Tabs
+### Analytics Workspace Tabs
 - `Dashboard`
 - `Prediction`
 - `Reports`
@@ -90,19 +92,49 @@ For Analyst:
 - `Performance`
 
 ## Dataset rules (required columns)
+
 When uploading CSV, these columns must exist:
 - `Year`
 - `Month`
 - `Temperature`
 - `Rainfall`
 - `CO2`
+- `Humidity`
+- `WindSpeed`
 
 The app cleans data by:
 - removing duplicates
 - converting numeric values safely
 - dropping invalid year/month
-- enforcing month 1-12
+- enforcing month in range `1-12`
 - filling missing numeric values with mean
+
+## Dashboard and anomaly logic
+
+- Year range filter
+- KPIs: Avg/Max Temperature, Avg Rainfall, Avg CO2, Avg Humidity, Avg WindSpeed
+- Trend charts for Temperature, Rainfall, CO2, Humidity, WindSpeed
+- Z-score anomaly detection (temperature/rainfall thresholds configurable)
+- Disaster risk alerts:
+  - Heatwave risk: `Temperature > threshold`
+  - Flood risk: `Rainfall > threshold`
+
+## Prediction module (current)
+
+Model: Linear Regression
+
+Training data:
+- Features `X`: `Year`, `Month`, `Rainfall`, `CO2`, `Humidity`, `WindSpeed`
+- Target `y`: `Temperature`
+
+Behavior:
+- model is trained once when dataset is loaded
+- model is stored in session state
+- prediction does not retrain model each click
+- metrics shown using train/test split:
+  - MAE
+  - RMSE
+  - R2
 
 ## Security and access behavior
 

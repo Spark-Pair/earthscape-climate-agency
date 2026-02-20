@@ -5,10 +5,11 @@ import pandas as pd
 import streamlit as st
 
 from . import database
+from . import prediction
 from .utils import REQUIRED_COLUMNS, card, show_toast
 
 
-NUMERIC_COLUMNS = ["Temperature", "Rainfall", "CO2"]
+NUMERIC_COLUMNS = ["Temperature", "Rainfall", "CO2", "Humidity", "WindSpeed"]
 
 
 def clean_and_validate_dataset(df: pd.DataFrame) -> tuple[pd.DataFrame | None, list[str]]:
@@ -94,6 +95,8 @@ def render_admin_upload_and_save(user: dict) -> None:
     st.session_state.last_upload_csv_text = cleaned_df.to_csv(index=False)
     st.session_state.last_upload_dataset_name = uploaded_file.name
 
+    prediction.train_and_store_model(cleaned_df, user_id=user["id"], force=True)
+
     dataset_name = st.text_input(
         "Dataset name", value=uploaded_file.name, key="dataset_name_input"
     )
@@ -101,7 +104,7 @@ def render_admin_upload_and_save(user: dict) -> None:
     analyst_options = {f"{row['username']} (id:{row['id']})": row["id"] for row in analysts}
 
     selected_labels = st.multiselect(
-        "Assign to analysts (for Save & Assign)",
+        "Assign to analysts (optional)",
         options=list(analyst_options.keys()),
         key="assign_multiselect",
     )
@@ -282,13 +285,21 @@ def render_assigned_dataset_selector(user: dict) -> None:
                 return
 
             df = pd.read_csv(StringIO(full_row["raw_csv_text"]))
+            cleaned_df, errors = clean_and_validate_dataset(df)
+            if errors or cleaned_df is None:
+                st.error("Saved dataset is invalid for current schema.")
+                for err in errors:
+                    st.error(err)
+                return
+
             elapsed_ms = (perf_counter() - start) * 1000
             database.log_performance(user["id"], "load_dataset_from_db", elapsed_ms)
 
-            st.session_state.active_df = df
+            st.session_state.active_df = cleaned_df
             st.session_state.active_dataset_id = full_row["id"]
             st.session_state.active_dataset_name = full_row["dataset_name"]
             st.session_state.active_dataset_source = "database"
+            prediction.train_and_store_model(cleaned_df, user_id=user["id"], force=True)
             st.success(f"Loaded dataset: {full_row['dataset_name']}")
             show_toast(f"Loaded dataset: {full_row['dataset_name']}", "success")
             st.rerun()
@@ -300,6 +311,10 @@ def render_assigned_dataset_selector(user: dict) -> None:
                 st.session_state.active_dataset_id = None
                 st.session_state.active_dataset_name = None
                 st.session_state.active_dataset_source = None
+                st.session_state.model = None
+                st.session_state.model_metrics = None
+                st.session_state.model_feature_defaults = None
+                st.session_state.model_dataset_signature = None
             st.success("Dataset deleted.")
             show_toast("Dataset deleted.", "success")
             st.rerun()

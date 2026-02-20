@@ -2,7 +2,15 @@ from io import StringIO
 import pandas as pd
 import streamlit as st
 
-REQUIRED_COLUMNS = ["Year", "Month", "Temperature", "Rainfall", "CO2"]
+REQUIRED_COLUMNS = [
+    "Year",
+    "Month",
+    "Temperature",
+    "Rainfall",
+    "CO2",
+    "Humidity",
+    "WindSpeed",
+]
 
 
 def render_global_styles() -> None:
@@ -321,6 +329,10 @@ def init_session_state() -> None:
         "show_add_user": False,
         "upload_uploader_key": 0,
         "upload_form_token": None,
+        "model": None,
+        "model_metrics": None,
+        "model_feature_defaults": None,
+        "model_dataset_signature": None,
     }
     for key, value in defaults.items():
         if key not in st.session_state:
