@@ -5,16 +5,24 @@ from .team_data import TEAM_MEMBERS
 
 
 def _chip(label: str, value: str) -> str:
-    if label.lower() == "email":
-        href = f"mailto:{value}"
-    else:
-        href = value
-
     safe_label = html.escape(label)
-    return (
-        f"<a class='link-chip' href='{href}' target='_blank'>"
-        f"{safe_label} <span class='chip-arrow'>↗</span></a>"
-    )
+    safe_value = html.escape(value)
+    lower = label.lower()
+
+    if lower == "email":
+        href = f"mailto:{value}"
+        return (
+            f"<a class='link-chip' href='{href}' target='_blank'>"
+            f"{safe_label} <span class='chip-arrow'>↗</span></a>"
+        )
+
+    if lower in {"linkedin", "github", "portfolio", "website"} and value.startswith("http"):
+        return (
+            f"<a class='link-chip' href='{value}' target='_blank'>"
+            f"{safe_label} <span class='chip-arrow'>↗</span></a>"
+        )
+
+    return f"<span class='link-chip'>{safe_label}: {safe_value}</span>"
 
 
 def render_team_page() -> None:

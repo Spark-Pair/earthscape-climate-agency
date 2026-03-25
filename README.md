@@ -86,3 +86,10 @@ Run on another port:
 ```bash
 streamlit run main.py --server.port 8502
 ```
+
+## 9. Deliverables
+
+Project report and documentation are in `deliverables/`:
+- Report, user guide, developer guide, DFDs, flowcharts, process diagrams
+- DB design, module descriptions, test data, installation instructions, assumptions
+- Filled feedback and status report forms in `deliverables/forms/`

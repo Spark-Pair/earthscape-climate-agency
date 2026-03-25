@@ -242,5 +242,33 @@ def render_dashboard(df: pd.DataFrame, dataset_name: str, user_id: int) -> None:
                     width="stretch",
                 )
 
+        st.divider()
+        st.markdown("### Save Alerts Snapshot")
+        st.caption(
+            "Store the current anomaly + disaster-risk results as a snapshot for reporting and review."
+        )
+        snapshot_summary = (
+            f"Anomalies={len(anomalies)} | Heatwave={len(heatwave_records)} | Flood={len(flood_records)}"
+        )
+        if st.button("Save Alerts Snapshot", width="stretch"):
+            dataset_id = st.session_state.get("active_dataset_id")
+            database.insert_alert_snapshot(
+                dataset_id=dataset_id,
+                dataset_name=dataset_name,
+                user_id=user_id,
+                summary_text=snapshot_summary,
+                temp_thresh=float(temp_thresh),
+                rain_thresh=float(rain_thresh),
+                co2_thresh=float(co2_thresh),
+                humidity_thresh=2.0,
+                wind_thresh=2.0,
+                heatwave_threshold=float(heatwave_temp_threshold),
+                flood_threshold=float(flood_rain_threshold),
+                anomaly_count=int(len(anomalies)),
+                heatwave_count=int(len(heatwave_records)),
+                flood_count=int(len(flood_records)),
+            )
+            st.success("Alerts snapshot saved.")
+
     elapsed_ms = (perf_counter() - start) * 1000
     database.log_performance(user_id, "generate_dashboard", elapsed_ms)

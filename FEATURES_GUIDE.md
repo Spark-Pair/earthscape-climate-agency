@@ -8,6 +8,7 @@ It allows users to:
 - upload and clean climate data
 - analyze trends and KPIs
 - detect anomalies and disaster-risk alerts
+- save alerts snapshots for reporting
 - predict temperature using ML under custom conditions
 - export reports
 - submit support feedback
@@ -118,6 +119,7 @@ The app cleans data by:
 - Disaster risk alerts:
   - Heatwave risk: `Temperature > threshold`
   - Flood risk: `Rainfall > threshold`
+- Alerts snapshots can be saved from the dashboard and reviewed in Reports
 
 ## Prediction module (current)
 

@@ -51,6 +51,36 @@ def render_reports_page(df: pd.DataFrame, dataset_name: str, user_id: int) -> No
     st.markdown("### Year-Month Aggregated Report")
     st.dataframe(aggregate_report, width="stretch")
 
+    st.markdown("### Alerts Snapshot History")
+    dataset_id = st.session_state.get("active_dataset_id")
+    alert_rows = database.list_alerts_for_dataset(dataset_id, dataset_name, limit=200)
+    if not alert_rows:
+        st.info("No alerts snapshots saved for this dataset yet.")
+    else:
+        st.dataframe(
+            pd.DataFrame(
+                [
+                    {
+                        "id": r["id"],
+                        "dataset": r["dataset_name"],
+                        "created_at": r["created_at"],
+                        "created_by": r["username"] or "unknown",
+                        "summary": r["summary_text"],
+                        "anomalies": r["anomaly_count"],
+                        "heatwave": r["heatwave_count"],
+                        "flood": r["flood_count"],
+                        "temp_thresh": r["temp_thresh"],
+                        "rain_thresh": r["rain_thresh"],
+                        "co2_thresh": r["co2_thresh"],
+                        "heatwave_threshold": r["heatwave_threshold"],
+                        "flood_threshold": r["flood_threshold"],
+                    }
+                    for r in alert_rows
+                ]
+            ),
+            width="stretch",
+        )
+
     c1, c2 = st.columns(2)
 
     with c1:

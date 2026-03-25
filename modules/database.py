@@ -75,6 +75,27 @@ def init_db(db_path: str = DB_NAME) -> None:
                 execution_time_ms REAL NOT NULL,
                 FOREIGN KEY (user_id) REFERENCES users(id)
             );
+
+            CREATE TABLE IF NOT EXISTS alerts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                dataset_id INTEGER,
+                dataset_name TEXT NOT NULL,
+                user_id INTEGER,
+                created_at TEXT NOT NULL,
+                summary_text TEXT NOT NULL,
+                temp_thresh REAL,
+                rain_thresh REAL,
+                co2_thresh REAL,
+                humidity_thresh REAL,
+                wind_thresh REAL,
+                heatwave_threshold REAL,
+                flood_threshold REAL,
+                anomaly_count INTEGER NOT NULL,
+                heatwave_count INTEGER NOT NULL,
+                flood_count INTEGER NOT NULL,
+                FOREIGN KEY (dataset_id) REFERENCES datasets(id) ON DELETE SET NULL,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+            );
             """
         )
         _migrate_users_table(conn)
@@ -338,6 +359,82 @@ def list_performance_logs(limit: int = 1000) -> list[sqlite3.Row]:
             FROM performance_logs p
             LEFT JOIN users u ON p.user_id = u.id
             ORDER BY p.timestamp DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+
+
+def insert_alert_snapshot(
+    dataset_id: Optional[int],
+    dataset_name: str,
+    user_id: Optional[int],
+    summary_text: str,
+    temp_thresh: float,
+    rain_thresh: float,
+    co2_thresh: float,
+    humidity_thresh: float,
+    wind_thresh: float,
+    heatwave_threshold: float,
+    flood_threshold: float,
+    anomaly_count: int,
+    heatwave_count: int,
+    flood_count: int,
+) -> int:
+    with get_connection() as conn:
+        cur = conn.execute(
+            """
+            INSERT INTO alerts (
+                dataset_id, dataset_name, user_id, created_at, summary_text,
+                temp_thresh, rain_thresh, co2_thresh, humidity_thresh, wind_thresh,
+                heatwave_threshold, flood_threshold, anomaly_count, heatwave_count, flood_count
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                dataset_id,
+                dataset_name,
+                user_id,
+                now_utc(),
+                summary_text,
+                temp_thresh,
+                rain_thresh,
+                co2_thresh,
+                humidity_thresh,
+                wind_thresh,
+                heatwave_threshold,
+                flood_threshold,
+                anomaly_count,
+                heatwave_count,
+                flood_count,
+            ),
+        )
+        return cur.lastrowid
+
+
+def list_alerts_for_dataset(dataset_id: Optional[int], dataset_name: str, limit: int = 200) -> list[sqlite3.Row]:
+    with get_connection() as conn:
+        return conn.execute(
+            """
+            SELECT a.*, u.username
+            FROM alerts a
+            LEFT JOIN users u ON a.user_id = u.id
+            WHERE (a.dataset_id = ? OR a.dataset_name = ?)
+            ORDER BY a.created_at DESC
+            LIMIT ?
+            """,
+            (dataset_id, dataset_name, limit),
+        ).fetchall()
+
+
+def list_recent_alerts(limit: int = 200) -> list[sqlite3.Row]:
+    with get_connection() as conn:
+        return conn.execute(
+            """
+            SELECT a.*, u.username
+            FROM alerts a
+            LEFT JOIN users u ON a.user_id = u.id
+            ORDER BY a.created_at DESC
             LIMIT ?
             """,
             (limit,),
